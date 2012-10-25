@@ -1,39 +1,39 @@
 class ShortMemory
-  heap = []
-  memorable = require './memorable.js'
+  heap: []
+  Memorable: require './memorable.js'
   MaxSize: 0
   MaxRecords: 0
   MaxAge: 0
   
-  Size: ()->
-    clearFuncs = []
-    stack = [heap]
-    bytes = 0
-    func = null
-    isChecked = (item)->
-      item["__c"] || false;
-    check = (item)->
-      item["__c"] = true;
-    uncheck = (item)->
-      delete item["__c"]
-    while(stack.length)
-      value = stack.pop()
-      do(value)->
-        if typeof value is 'string'
-          bytes += value.length * 2
-        else if typeof value is 'boolean'
-          bytes += 4
-        else if typeof value is 'number'
-          bytes += 8
-        else if typeof value is 'object' and not isChecked value
-          clearFuncs.push ->
-            uncheck value
-          for i,val of value
-            if value.hasOwnProperty i
-              stack.push val
-          check value
-    while func = clearFuncs.pop()
-      func.call()
-    return bytes
+  constructor = (options)->
+    options?= {}
+    options.maxSize?= 0
+    options.maxRecords?= 0
+    options.maxAge?= 0
+    
+    @MaxSize = maxSize
+    @MaxRecords = maxRecords
+    @MaxAge = maxAge
+  
+  Set: (key, data, options, callback)->
+    try 
+      memorable = new Memorable key, data, options
+      heap.push memorable
+    catch ex
+      console.error "Unable to set memorable: #{ex}"
+  
+  # Returns error:empty if there is no valid entry
+  Get: (key, callback)->
+  
+  # Performs elseback to get data if empty
+  GetOrElse: (key, options, callback, elseback)->
+  
+  
+  CalculateSize: ->
+    size = 0
+    for memorable in @heap
+      size += memorable.Size
+    return size
+    
 
 module.exports = ShortMemory
