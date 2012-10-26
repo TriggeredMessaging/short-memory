@@ -1,37 +1,109 @@
 class ShortMemory
-  heap: []
+  heap: {}
   Memorable: require './memorable.js'
-  MaxSize: 0
-  MaxRecords: 0
-  MaxAge: 0
+  maxSize: 0
+  maxRecords: 0
+  maxAge: 0
+  pruneTime: 5
+  debug: false
   
   constructor = (options)->
     options?= {}
     options.maxSize?= 0
     options.maxRecords?= 0
     options.maxAge?= 0
+    options.pruneTime?= 5
+    options.debug?= false
     
-    @MaxSize = maxSize
-    @MaxRecords = maxRecords
-    @MaxAge = maxAge
+    @maxSize = options.maxSize
+    @maxRecords = options.maxRecords
+    @maxAge = options.maxAge
+    @debug = options.debug
+    @pruneTime = options.pruneTime * 1000
+    
+    do->
+      @prune
+    
   
-  Set: (key, data, options, callback)->
+  set: (key, data, options, callback)->
     try 
       memorable = new Memorable key, data, options
-      heap.push memorable
+      heap[key] = memorable
+      callback null, memorable.data
     catch ex
       console.error "Unable to set memorable: #{ex}"
+      callback ex
   
-  # Returns error:empty if there is no valid entry
-  Get: (key, callback)->
+  # Returns error:notfound if there is no valid entry
+  get: (key, callback)->
+    process.nextTick ->
+      value = @heap[key]
+      if typeof value is 'undefined'
+        callback
+          type: "notfound"
+          message: "Key #{key} not found in heap."
+      else
+        if value.IsExpired() || value.Invalid
+          @destroy key
+          callback
+            type: "invalid"
+            message: "Key #{key} is invalid or expired."
+        else
+          callback null, value.data
   
-  # Performs elseback to get data if empty
-  GetOrElse: (key, options, callback, elseback)->
+  # Performs setback to get data if empty or invalid
+  # Ultimately, callback gets called with end data
+  getOrSet: (key, options, callback, setback)->
+    @get key, (error, value)->
+      if error
+        if error.type is "notfound" or error.type is "invalid"
+          process.nextTick ->
+            data = setback()
+            return @set key, data, options, callback
+        return error
+      else
+        return value
+    
+  destroy: (key, callback)->
+    callback(delete @heap[key])
   
+  prune: ->
+    clearTimeout @timer
+    # Destroy invalid/expired keys first
+    for key, memorable of @heap
+      if not memorable.isGood
+        prunable.push key
+    for i, key in prunable
+        @destroy key
+    # Destroy overcount
+    if @maxCount isnt 0
+      count = Object.keys(@heap).length
+      if count > @maxCount
+        overCount = count - @maxCount
+        prunable = Object.keys(@heap).slice(0, overCount)
+        for i, key in prunable
+          @destroy key
+    # Destroy oversize
+    if @maxSize isnt 0
+      size = @calculateSize()
+      if size > @maxSize
+        overSize = size - @maxSize
+        prunable = []
+        for key, memorable of @heap
+          prunable.push key
+          overSize -= memorable.size
+          if overSize <= 0 then break
+        for i, key in prunable
+          @destroy key
+    @timer = setTimeout(
+      ->
+        @prune
+      @pruneTime
+    )
   
-  CalculateSize: ->
+  calculateSize: ->
     size = 0
-    for memorable in @heap
+    for i, memorable of @heap
       size += memorable.Size
     return size
     
