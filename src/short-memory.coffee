@@ -1,3 +1,60 @@
+
+# Tell IE9 to use its built-in console
+if Function::bind and (typeof console is "object" or typeof console is "function") and typeof console.log is "object"
+  ["log", "info", "warn", "error", "assert", "dir", "clear", "profile", "profileEnd"].forEach ((method) ->
+    console[method] = @call(console[method], console)
+  ), Function::bind
+
+# log() -- The complete, cross-browser (we don't judge!) console.log wrapper for his or her logging pleasure
+window = window || global
+
+unless window.log
+  window
+  window.log = ->
+    log.history = log.history or [] # store logs to an array for reference
+    log.history.push arguments_
+    
+    # Modern browsers
+    if typeof console isnt "undefined" and typeof console.log is "function"
+      
+      # Single argument, which is a string
+      if (Array::slice.call(arguments_)).length is 1 and typeof Array::slice.call(arguments_)[0] is "string"
+        console.log (Array::slice.call(arguments_)).toString()
+      else
+        console.log Array::slice.call(arguments_)
+    
+    # IE8
+    else if not Function::bind and typeof console isnt "undefined" and typeof console.log is "object"
+      Function::call.call console.log, console, Array::slice.call(arguments_)
+    
+    # IE7 and lower, and other old browsers
+    else
+      args = arguments_
+      
+      # Inject Firebug lite
+      unless document.getElementById("firebug-lite")
+        
+        # Include the script
+        script = document.createElement("script")
+        script.type = "text/javascript"
+        script.id = "firebug-lite"
+        
+        # If you run the script locally, point to /path/to/firebug-lite/build/firebug-lite.js
+        script.src = "https://getfirebug.com/firebug-lite.js"
+        
+        # If you want to expand the console window by default, uncomment this line
+        #document.getElementsByTagName('HTML')[0].setAttribute('debug','true');
+        document.getElementsByTagName("HEAD")[0].appendChild script
+        setTimeout (->
+          window.log.apply window, args
+        ), 2000
+      else
+        
+        # FBL was included but it hasn't finished loading yet, so try again momentarily
+        setTimeout (->
+          window.log.apply window, args
+        ), 500
+
 Object.keys = Object.keys or do->
   hasOwnProperty = Object.prototype.hasOwnProperty
   hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString")
