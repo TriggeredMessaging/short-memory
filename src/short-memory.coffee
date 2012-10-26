@@ -24,6 +24,12 @@ Object.keys = Object.keys or do->
           result.push DontEnum
     return result
 
+this.process?= {}
+
+if not this.process.nextTick
+  this.process.nextTick = (task)->
+    setTimeout task, 0
+
 class ShortMemory
   heap: {}
   maxSize: 0
@@ -70,20 +76,32 @@ class ShortMemory
   # Returns error:notfound if there is no valid entry
   get: (key, callback)->
     _this = this
-    process.nextTick ->
+    if typeof callback is 'function'
+      process.nextTick ->
+        value = _this.heap[key]
+        if typeof value is 'undefined'
+          return callback
+            type: "notfound"
+            message: "Key #{key} not found in heap."
+        else
+          if not value.isGood
+            _this.destroy key
+            return callback
+              type: "invalid"
+              message: "Key #{key} is invalid or expired."
+          else
+            return callback null, value.data
+    else
       value = _this.heap[key]
       if typeof value is 'undefined'
-        callback
-          type: "notfound"
-          message: "Key #{key} not found in heap."
+        return null
       else
         if not value.isGood
           _this.destroy key
-          callback
-            type: "invalid"
-            message: "Key #{key} is invalid or expired."
+          return null
         else
-          callback null, value.data
+          return value.data
+      
   
   # Performs setback to get data if empty or invalid
   # Ultimately, callback gets called with end data
