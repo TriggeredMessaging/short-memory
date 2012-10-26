@@ -1,6 +1,32 @@
+Object.keys = Object.keys or do->
+  hasOwnProperty = Object.prototype.hasOwnProperty
+  hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString")
+  DontEnums = [
+    'toString',
+    'toLocaleString'
+    'valueOf'
+    'hasOwnProperty'
+    'isPrototypeOf'
+    'propertyIsEnumerable'
+    'constructor'
+  ]
+  DontEnumsLength = DontEnums.length
+  return (o)->
+    if typeof o isnt "object" and typeof o isnt "function" or o is null
+      throw new TypeError "Object.keys called on a non-object"
+    result = []
+    for key, obj of o
+      if hasOwnProperty.call o, key
+        result.push key
+    if hasDontEnumBug
+      for DontEnum in DontEnums
+        if hasOwnProperty.call o, DontEnum
+          result.push DontEnum
+    return result
+
 class ShortMemory
   heap: {}
-  Memorable: require './memorable.js'
+  Memorable: Memorable
   maxSize: 0
   maxCount: 0
   maxAge: 0
@@ -123,7 +149,66 @@ class ShortMemory
     for i, memorable of @heap
       size += memorable.size
     return size
-    
 
-module.exports = ShortMemory
-module.exports.VERSION = "0.0.1"
+class Memorable
+  key: ""
+  data: {}
+  invalid: false
+  size: 0
+  expires: 0
+  deathTime: 0
+  constructor: (key, data, options) ->
+    if typeof key is 'undefined' then throw "Memorable missing key element"
+    if typeof data is 'undefined' then throw "Memorable missing data element"
+    options?= {}
+    options.maxAge?= 0
+    options.deathTime?= 0
+    @key = key
+    @data = data
+    if options.maxAge isnt 0
+      @expires = Date.now() + (options.maxAge * 1000)
+    @deathTime = options.deathTime
+    @size = @calculateSize()
+  isGood: ->
+    return not @invalid and (@expires is 0 or Date.now() < @expires)
+  isNearDeath: ->
+    return Date.now() > (@expires - (DeathTime * 1000))
+  invalidate: ->
+    @invalid = true
+  calculateSize: ->
+    clearFuncs = []
+    stack = [@data]
+    bytes = 0
+    func = null
+    isChecked = (item)->
+      item["__c"] || false;
+    check = (item)->
+      item["__c"] = true;
+    uncheck = (item)->
+      delete item["__c"]
+    while(stack.length)
+      value = stack.pop()
+      do(value)->
+        if typeof value is 'string'
+          bytes += value.length * 2
+        else if typeof value is 'boolean'
+          bytes += 4
+        else if typeof value is 'number'
+          bytes += 8
+        else if typeof value is 'object' and not isChecked value
+          clearFuncs.push ->
+            uncheck value
+          for i,val of value
+            if value.hasOwnProperty i
+              stack.push val
+          check value
+    while func = clearFuncs.pop()
+      func.call()
+    return bytes
+
+root = this
+isNode = false
+if typeof module isnt 'undefined' and module.exports
+  module.exports = ShortMemory
+root.ShortMemory = ShortMemory
+root.Memorable = Memorable
