@@ -2,7 +2,7 @@ class ShortMemory
   heap: {}
   Memorable: require './memorable.js'
   maxSize: 0
-  maxRecords: 0
+  maxCount: 0
   maxAge: 0
   pruneTime: 5
   deathTime: 0
@@ -11,14 +11,14 @@ class ShortMemory
   constructor: (options)->
     options?= {}
     options.maxSize?= 0
-    options.maxRecords?= 0
+    options.maxCount?= 0
     options.maxAge?= 0
     options.deathTime?= 0
     options.pruneTime?= 5
     options.debug?= false
     
     @maxSize = options.maxSize
-    @maxRecords = options.maxRecords
+    @maxCount = options.maxCount
     @maxAge = options.maxAge
     @debug = options.debug
     @pruneTime = options.pruneTime * 1000
@@ -62,15 +62,15 @@ class ShortMemory
   # Performs setback to get data if empty or invalid
   # Ultimately, callback gets called with end data
   getOrSet: (key, options, callback, setback)->
+    _this = @
     @get key, (error, value)->
       if error
         if error.type is "notfound" or error.type is "invalid"
-          process.nextTick ->
-            data = setback()
-            return @set key, data, options, callback
-        return error
+              data = setback()
+              return _this.set key, data, options, callback
+        callback error
       else
-        return value
+        callback null, value
     
   destroy: (key)->
     @debug && console.log "Destroying key " + key
@@ -112,7 +112,6 @@ class ShortMemory
     _this = this
     @timer = setTimeout(
       (_this) ->
-        console.log _this
         ShortMemory.prototype.prune.call(_this)
       @pruneTime
       _this
@@ -122,7 +121,7 @@ class ShortMemory
   calculateSize: ->
     size = 0
     for i, memorable of @heap
-      size += memorable.Size
+      size += memorable.size
     return size
     
 
