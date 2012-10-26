@@ -27,7 +27,7 @@ class ShortMemory
   
   set: (key, data, options, callback)->
     try 
-      memorable = new Memorable key, data, options
+      memorable = new @Memorable key, data, options
       heap[key] = memorable
       callback null, memorable.data
     catch ex
