@@ -5,7 +5,8 @@
   "keywords": ["cache", "memory"],
   "author": "Aejay Goehring <aejay.goehring@gmail.com>",
   "dependencies": {
-    "coffee-script": ""
+    "coffee-script": "",
+    "uglify-js": ""
   },
   "devDependencies": {
   },

@@ -37,3 +37,4 @@ class ShortMemory
     return bytes
 
 module.exports = ShortMemory
+module.exports.VERSION = "0.0.1"
