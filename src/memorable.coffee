@@ -1,7 +1,6 @@
 class Memorable
   key: ""
   data: {}
-  time: new Date()
   invalid: false
   size: 0
   expires: 0
@@ -11,17 +10,17 @@ class Memorable
     if typeof data is 'undefined' then throw "Memorable missing data element"
     options?= {}
     options.maxAge?= 0
-    options.nearDeath?= 0
+    options.deathTime?= 0
     @key = key
     @data = data
-    if maxAge isnt 0
-      @Expires = @Time.now + (maxAge * 1000)
-    @nearDeath = options.nearDeath
+    if options.maxAge isnt 0
+      @expires = Date.now() + (options.maxAge * 1000)
+    @deathTime = options.deathTime
     @size = @calculateSize()
   isGood: ->
-    return not @invalid or @expires is 0 or @time.now < @expires
+    return not @invalid and (@expires is 0 or Date.now() < @expires)
   isNearDeath: ->
-    return @time.now > (@expires - (DeathTime * 1000))
+    return Date.now() > (@expires - (DeathTime * 1000))
   invalidate: ->
     @invalid = true
   calculateSize: ->
