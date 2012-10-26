@@ -6,7 +6,7 @@
   "author": "Aejay Goehring <aejay.goehring@gmail.com>",
   "dependencies": {
     "coffee-script": "",
-    "uglify-js": ""
+    "uglify-js2": ""
   },
   "devDependencies": {
   },

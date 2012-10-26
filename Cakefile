@@ -38,8 +38,8 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
       files.push path.normalize 'src/' + file
       compiledFiles.push path.normalize 'lib/' + (file.replace /\.coffee$/, ".js")
   run ['-c', '-o', 'lib'].concat(files), cb
+  uglify = require 'uglify-js2'
   for file in compiledFiles
-    code = fs.readFileSync file, "utf8"
-    {parser, uglify} = require 'uglify-js'
-    code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle parser.parse code
-    fs.writeFileSync file.replace(/\.js$/, ".min.js"), code, "utf8"
+    code = uglify.minify file, {outSourceMap: path.basename file.replace /\.js$/, ".min.map" }
+    fs.writeFileSync file.replace(/\.js$/, ".min.js"), code.code, "utf8"
+    fs.writeFileSync file.replace(/\.js$/, ".min.map"), code.map, "utf8"
