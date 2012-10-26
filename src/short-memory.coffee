@@ -26,15 +26,16 @@ Object.keys = Object.keys or do->
 
 class ShortMemory
   heap: {}
-  Memorable: Memorable
   maxSize: 0
   maxCount: 0
   maxAge: 0
   pruneTime: 5
   deathTime: 0
   debug: false
+  _this = this
   
   constructor: (options)->
+    _this = this
     options?= {}
     options.maxSize?= 0
     options.maxCount?= 0
@@ -43,14 +44,13 @@ class ShortMemory
     options.pruneTime?= 5
     options.debug?= false
     
-    @maxSize = options.maxSize
-    @maxCount = options.maxCount
-    @maxAge = options.maxAge
-    @debug = options.debug
-    @pruneTime = options.pruneTime * 1000
-    @deathTime = options.deathTime
+    _this.maxSize = options.maxSize
+    _this.maxCount = options.maxCount
+    _this.maxAge = options.maxAge
+    _this.debug = options.debug
+    _this.pruneTime = options.pruneTime * 1000
+    _this.deathTime = options.deathTime
     
-    _this = this
     do (_this) ->
       ShortMemory.prototype.prune.call(_this)
     
@@ -58,10 +58,10 @@ class ShortMemory
   set: (key, data, options, callback)->
     #try 
       options?= {}
-      options.maxAge?= @maxAge
-      options.deathTime?= @deathTime
-      memorable = new @Memorable key, data, options
-      @heap[key] = memorable
+      options.maxAge?= _this.maxAge
+      options.deathTime?= _this.deathTime
+      memorable = new Memorable key, data, options
+      _this.heap[key] = memorable
       callback null, memorable.data
     #catch ex
     #  console.error "Unable to set memorable: #{ex}"
@@ -69,7 +69,7 @@ class ShortMemory
   
   # Returns error:notfound if there is no valid entry
   get: (key, callback)->
-    _this = @
+    _this = this
     process.nextTick ->
       value = _this.heap[key]
       if typeof value is 'undefined'
@@ -78,7 +78,7 @@ class ShortMemory
           message: "Key #{key} not found in heap."
       else
         if not value.isGood
-          @destroy key
+          _this.destroy key
           callback
             type: "invalid"
             message: "Key #{key} is invalid or expired."
@@ -88,8 +88,8 @@ class ShortMemory
   # Performs setback to get data if empty or invalid
   # Ultimately, callback gets called with end data
   getOrSet: (key, options, callback, setback)->
-    _this = @
-    @get key, (error, value)->
+    _this = this
+    _this.get key, (error, value)->
       if error
         if error.type is "notfound" or error.type is "invalid"
               data = setback()
@@ -99,54 +99,52 @@ class ShortMemory
         callback null, value
     
   destroy: (key)->
-    @debug && console.log "Destroying key " + key
-    delete @heap[key]
+    _this.debug && console.log "Destroying key " + key
+    delete _this.heap[key]
   
   prune: ->
-    clearTimeout @timer
+    clearTimeout _this.timer
     prunable = []
     pruned = 0
     # Destroy invalid/expired keys first
-    for key, memorable of @heap
+    for key, memorable of _this.heap
       if not memorable.isGood()
         prunable.push key
     for key in prunable
       pruned++
-      @destroy key
+      _this.destroy key
     # Destroy overcount
-    if @maxCount isnt 0
-      count = Object.keys(@heap).length
-      if count > @maxCount
-        overCount = count - @maxCount
-        prunable = Object.keys(@heap).slice(0, overCount)
+    if _this.maxCount isnt 0
+      count = Object.keys(_this.heap).length
+      if count > _this.maxCount
+        overCount = count - _this.maxCount
+        prunable = Object.keys(_this.heap).slice(0, overCount)
         for key in prunable
           pruned++
-          @destroy key
+          _this.destroy key
     # Destroy oversize
-    if @maxSize isnt 0
-      size = @calculateSize()
-      if size > @maxSize
-        overSize = size - @maxSize
+    if _this.maxSize isnt 0
+      size = _this.calculateSize()
+      if size > _this.maxSize
+        overSize = size - _this.maxSize
         prunable = []
-        for key, memorable of @heap
+        for key, memorable of _this.heap
           prunable.push key
           overSize -= memorable.size
           if overSize <= 0 then break
         for key in prunable
           pruned++
-          @destroy key
-    _this = this
-    @timer = setTimeout(
-      (_this) ->
+          _this.destroy key
+    _this.timer = setTimeout(
+      () ->
         ShortMemory.prototype.prune.call(_this)
-      @pruneTime
-      _this
+      _this.pruneTime
     )
     return pruned
   
   calculateSize: ->
     size = 0
-    for i, memorable of @heap
+    for i, memorable of _this.heap
       size += memorable.size
     return size
 
@@ -157,27 +155,29 @@ class Memorable
   size: 0
   expires: 0
   deathTime: 0
+  _this = this
   constructor: (key, data, options) ->
+    _this = this
     if typeof key is 'undefined' then throw "Memorable missing key element"
     if typeof data is 'undefined' then throw "Memorable missing data element"
     options?= {}
     options.maxAge?= 0
     options.deathTime?= 0
-    @key = key
-    @data = data
+    _this.key = key
+    _this.data = data
     if options.maxAge isnt 0
-      @expires = Date.now() + (options.maxAge * 1000)
-    @deathTime = options.deathTime
-    @size = @calculateSize()
+      _this.expires = Date.now() + (options.maxAge * 1000)
+    _this.deathTime = options.deathTime
+    _this.size = _this.calculateSize()
   isGood: ->
-    return not @invalid and (@expires is 0 or Date.now() < @expires)
+    return not _this.invalid and (_this.expires is 0 or Date.now() < _this.expires)
   isNearDeath: ->
-    return Date.now() > (@expires - (DeathTime * 1000))
+    return Date.now() > (_this.expires - (DeathTime * 1000))
   invalidate: ->
-    @invalid = true
+    _this.invalid = true
   calculateSize: ->
     clearFuncs = []
-    stack = [@data]
+    stack = [_this.data]
     bytes = 0
     func = null
     isChecked = (item)->
