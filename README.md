@@ -35,12 +35,6 @@ cache.get("First!", function(err, result) {
 
 ShortMemory can be initialized with several options, which you can use to limit 
 the size and alter the behavior of the cache:
-_this.maxSize = options.maxSize;
-      _this.maxCount = options.maxCount;
-      _this.maxAge = options.maxAge;
-      _this.debug = options.debug;
-      _this.pruneTime = options.pruneTime * 1000;
-      _this.deathTime = options.deathTime;
 ```js
 var options = {
   // How long, in seconds, it takes for an entry to expire and become prunable.
