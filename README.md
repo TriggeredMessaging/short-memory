@@ -8,7 +8,8 @@ limited by entry count, entry age, or cache size.
 
 ## Installation
 
-This app is not yet available in NPM. To install it through NPM, use the following:
+This app is not yet available in npm's repository. To install it through npm, use 
+the following:
 
     $ npm install git://github.com/aejay/short-memory.git
 
