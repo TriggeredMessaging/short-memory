@@ -75,6 +75,7 @@ var cache = new ShortMemory(options);
 
 ```js
 // Let's start with the following assumption:
+var ShortMemory = require("short-memory");
 var cache = new ShortMemory({maxCount: 10});
 ```
 
