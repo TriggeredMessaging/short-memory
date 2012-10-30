@@ -1,4 +1,4 @@
-ï»¿short-memory
+short-memory
 ============
 
 Simple node.js in-memory caching library.
@@ -85,7 +85,7 @@ by providing a callback function, which receive data in the expected
 `(err, data)` format.
 
 When called synchronously, the value of the key is returned to the calling 
-expression when successful—when unsuccessful, it returns `null`.
+expression when successfulï¿½when unsuccessful, it returns `null`.
 
 ```js
 cache.set("name", "Andrew");
