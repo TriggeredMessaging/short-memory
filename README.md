@@ -230,7 +230,7 @@ cache.isHealthy("animal");
 If you'd like to compile the coffeescript to javascript yourself, simply use
 cake:
 
-```sh
+```
 $ cake
 Cakefile defines the following tasks:
 
