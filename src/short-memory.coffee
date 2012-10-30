@@ -1,4 +1,3 @@
-
 # This console.log wrapper is the work of Craig Patik, coffeefied.
 # (Will split into separate, concat file later)
 
