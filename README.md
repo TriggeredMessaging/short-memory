@@ -236,9 +236,11 @@ Cakefile defines the following tasks:
 
 cake build                # build the short-memory library from source
 cake watch                # watch the source files for changes, and build
-cake min                  # minify the output of the build for browsers
 
   -m, --minify       define whether to also minify build or watch
+
+$ cake build
+Compiling: src\short-memory.coffee
 ```
 
 # Credits
