@@ -94,7 +94,7 @@ cache.set("name", "Andrew");
 
 cache.set("food", "Pizza", function(err, data) {
   if (err) throw err;
-  else console.log(result);
+  else console.log(data);
 });
 
 cache.set("animal", "Panda", {maxAge: 120, deathTime: 30}, function(err, result) {
