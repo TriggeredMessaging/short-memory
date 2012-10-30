@@ -8,8 +8,16 @@ children = require 'child_process'
 # Built file header.
 header = """
   /**
-   * short-memory Compiler
+   * short-memory; Copyright 2012 Aejay Goehring. 
+   * Licensed under MIT License. 
+   * See LICENSE for details. 
    */
+
+"""
+
+headermin = """
+  /* short-memory; Copyright 2012 Aejay Goehring. Licensed under MIT License; See LICENSE for details. */
+
 """
 
 option '-m', '--minify', 'define whether to also minify build or watch'
@@ -30,7 +38,7 @@ task 'build', 'build the short-memory library from source', build = (options) ->
     if file.match(/\.coffee$/)
       console.log "Compiling: " + path.normalize("src/" + file)
       output = 'lib/' + (file.replace /\.coffee$/, ".js")
-      contents = CoffeeScript.compile contents
+      contents = header + CoffeeScript.compile contents
     else
       console.log "Copying: " + path.normalize("src/" + file)
     fs.writeFileSync(output, contents, "utf8");
@@ -43,7 +51,7 @@ task 'build', 'build the short-memory library from source', build = (options) ->
     for file in files
       console.log "Minifying: " + file
       code = uglify.minify file, {outSourceMap: path.basename file.replace /\.js$/, ".min.map" }
-      fs.writeFileSync file.replace(/\.js$/, ".min.js"), code.code, "utf8"
+      fs.writeFileSync file.replace(/\.js$/, ".min.js"), headermin + code.code, "utf8"
       fs.writeFileSync file.replace(/\.js$/, ".min.map"), code.map, "utf8"
 
 task 'watch', 'watch the source files for changes, and build', watch = (options) ->
