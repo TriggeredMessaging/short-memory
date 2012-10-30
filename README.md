@@ -1,4 +1,4 @@
-short-memory
+ï»¿short-memory
 ============
 
 Simple node.js in-memory caching library.
@@ -236,7 +236,7 @@ Browser compatibility (for those who might need it) is made possible thanks to
 
 # License
 
-©2012 Aejay Goehring and available under the MIT license:
+&copy;2012 Aejay Goehring and available under the MIT license:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the "Software"), to deal in 
