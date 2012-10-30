@@ -74,6 +74,7 @@ var cache = new ShortMemory(options);
 ## Functions
 
 ```js
+// Let's start with the following assumption:
 var cache = new ShortMemory({maxCount: 10});
 ```
 
@@ -81,11 +82,11 @@ var cache = new ShortMemory({maxCount: 10});
 
 Sets the key to the given value. When successful, it responds with the
 value of the given entry's value. This function can be called asynchronously
-by providing a callback function, which receive data in the expected
+by providing a callback function, which receives data in the expected
 `(err, data)` format.
 
 When called synchronously, the value of the key is returned to the calling 
-expression when successful�when unsuccessful, it returns `null`.
+expression when successful; when unsuccessful, it returns `null`.
 
 ```js
 cache.set("name", "Andrew");
