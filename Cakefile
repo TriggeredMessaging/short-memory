@@ -55,14 +55,3 @@ task 'watch', 'watch the source files for changes, and build', watch = (options)
           console.log "Saw change in #{file}; rebuilding."
           invoke 'build'
   return true
-
-task 'min', 'minify the output of the build for browsers', minify = (cb) ->
-  files = []
-  for file in (fs.readdirSync 'lib')
-    if file.match(/\.js$/) and not file.match(/\.min.js$/)
-      files.push path.normalize 'lib/' + file
-  uglify = require 'uglify-js2'
-  for file in files
-    code = uglify.minify file, {outSourceMap: path.basename file.replace /\.js$/, ".min.map" }
-    fs.writeFileSync file.replace(/\.js$/, ".min.js"), code.code, "utf8"
-    fs.writeFileSync file.replace(/\.js$/, ".min.map"), code.map, "utf8"
