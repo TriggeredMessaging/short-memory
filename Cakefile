@@ -3,6 +3,7 @@ path          = require 'path'
 #{extend}      = require './lib/coffee-script/helpers'
 CoffeeScript  = require 'coffee-script'
 {spawn, exec} = require 'child_process'
+children = require 'child_process'
 
 # Built file header.
 header = """
@@ -11,35 +12,57 @@ header = """
    */
 """
 
-sources = [
-  'coffee-script', 'grammar', 'helpers'
-  'lexer', 'nodes', 'rewriter', 'scope'
-].map (filename) -> "src/#{filename}.coffee"
+option '-m', '--minify', 'define whether to also minify build or watch'
 
-# Run a CoffeeScript through our node/coffee interpreter.
-run = (args, cb) ->
-  proc =         spawn 'node', ['node_modules/coffee-script/bin/coffee'].concat(args)
-  proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
-  proc.on        'exit', (status) ->
-    process.exit(1) if status != 0
-    cb() if typeof cb is 'function'
+task 'build', 'build the short-memory library from source', build = (options) ->
+  #proc = children.exec (path.normalize "./node_modules/coffee-script/bin/coffee") + " -l -c -o lib/ src/", (err, stdout, stderr) ->
+  #  console.info stdout
+  #  console.error stderr
+  #  if err then console.error 'exec error: ' + err
+  #proc = children.spawn "node", [path.normalize("./node_modules/coffee-script/bin/coffee"), '-l', '-c', '-o', 'lib/', 'src/'], (err, stdout, stderr) ->
+  #proc.stdout.on  'data', (buffer) -> console.info buffer.toString()
+  #proc.stderr.on  'data', (buffer) -> console.error buffer.toString()
+  #proc.on         'exit', (status) ->
+  #  if status != 0 then process.exit(1)
+  for file in (fs.readdirSync 'src')
+    output = 'lib/' + file
+    contents = fs.readFileSync 'src/' + file, "utf8"
+    if file.match(/\.coffee$/)
+      console.log "Compiling: " + path.normalize("src/" + file)
+      output = 'lib/' + (file.replace /\.coffee$/, ".js")
+      contents = CoffeeScript.compile contents
+    else
+      console.log "Copying: " + path.normalize("src/" + file)
+    fs.writeFileSync(output, contents, "utf8");
+  if options.minify
+    files = []
+    for file in (fs.readdirSync 'lib')
+      if file.match(/\.js$/) and not file.match(/\.min.js$/)
+        files.push path.normalize 'lib/' + file
+    uglify = require 'uglify-js2'
+    for file in files
+      console.log "Minifying: " + file
+      code = uglify.minify file, {outSourceMap: path.basename file.replace /\.js$/, ".min.map" }
+      fs.writeFileSync file.replace(/\.js$/, ".min.js"), code.code, "utf8"
+      fs.writeFileSync file.replace(/\.js$/, ".min.map"), code.map, "utf8"
 
-# Log a message with a color.
-log = (message, color, explanation) ->
-  console.log color + message + reset + ' ' + (explanation or '')
-
-option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
-
-task 'build', 'build the CoffeeScript language from source', build = (cb) ->
-  files = []
-  compiledFiles = []
+task 'watch', 'watch the source files for changes, and build', watch = (options) ->
+  invoke 'build'
   for file in (fs.readdirSync 'src')
     if file.match(/\.coffee$/)
-      files.push path.normalize 'src/' + file
-      compiledFiles.push path.normalize 'lib/' + (file.replace /\.coffee$/, ".js")
-  run ['-c', '-o', 'lib'].concat(files), cb
+      fs.watchFile (path.normalize "src/" + file), (curr, prev) ->
+        if curr.mtime isnt prev.mtime
+          console.log "Saw change in #{file}; rebuilding."
+          invoke 'build'
+  return true
+
+task 'min', 'minify the output of the build for browsers', minify = (cb) ->
+  files = []
+  for file in (fs.readdirSync 'lib')
+    if file.match(/\.js$/) and not file.match(/\.min.js$/)
+      files.push path.normalize 'lib/' + file
   uglify = require 'uglify-js2'
-  for file in compiledFiles
+  for file in files
     code = uglify.minify file, {outSourceMap: path.basename file.replace /\.js$/, ".min.map" }
     fs.writeFileSync file.replace(/\.js$/, ".min.js"), code.code, "utf8"
     fs.writeFileSync file.replace(/\.js$/, ".min.map"), code.map, "utf8"
