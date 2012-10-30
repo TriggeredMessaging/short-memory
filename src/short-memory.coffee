@@ -139,6 +139,9 @@ class ShortMemory
     
   
   set: (key, data, options, callback)->
+    if typeof options is 'function'
+      callback = options
+      options = {}
     if typeof callback is 'function'
       _this.debug && console.log "Debug: set has a callback; running async"
       process.nextTick ()->
