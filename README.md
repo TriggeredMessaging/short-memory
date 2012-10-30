@@ -225,6 +225,22 @@ cache.isHealthy("food");
 cache.isHealthy("animal");
 ```
 
+# Building
+
+If you'd like to compile the coffeescript to javascript yourself, simply use
+cake:
+
+```sh
+$ cake
+Cakefile defines the following tasks:
+
+cake build                # build the short-memory library from source
+cake watch                # watch the source files for changes, and build
+cake min                  # minify the output of the build for browsers
+
+  -m, --minify       define whether to also minify build or watch
+```
+
 # Credits
 
 This library was inspired by [memcached](http://memcached.org/) (in spirit, 
