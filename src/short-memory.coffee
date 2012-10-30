@@ -139,51 +139,103 @@ class ShortMemory
     
   
   set: (key, data, options, callback)->
-    #try 
+    if typeof callback is 'function'
+      _this.debug && console.log "Debug: set has a callback; running async"
+      process.nextTick ()->
+        value = _this.setInternal key, data, options
+        callback value[0], value[1]
+      return null
+    else
+      _this.debug && console.log "Debug: get has no callback; running sync"
+      return (_this.setInternal key, data, options)[1]
+  
+  setInternal: (key, data, options) ->
+    try 
       options?= {}
       options.maxAge?= _this.maxAge
       options.deathTime?= _this.deathTime
       memorable = new Memorable key, data, options
       _this.heap[key] = memorable
-      callback null, memorable.data
-    #catch ex
-    #  console.error "Unable to set memorable: #{ex}"
-    #  callback ex
+      _this.debug && console.log "Debug: set heap[" + key + "] to " + data
+      return [null, memorable.data]
+    catch ex
+      console.error "Unable to set memorable: #{ex}"
+      return [{type:"exception", message: ex}, null]
   
-  # Returns error:notfound if there is no valid entry
   get: (key, callback)->
     _this = this
     if typeof callback is 'function'
-      process.nextTick ->
-        value = _this.heap[key]
-        if typeof value is 'undefined'
-          return callback
-            type: "notfound"
-            message: "Key #{key} not found in heap."
-        else
-          if not value.isGood
-            _this.destroy key
-            return callback
-              type: "invalid"
-              message: "Key #{key} is invalid or expired."
-          else
-            return callback null, value.data
+      _this.debug && console.log "Debug: get has a callback; running async"
+      process.nextTick ()->
+        value = _this.getInternal key
+        callback value[0], value[1]
+      return null
     else
-      value = _this.heap[key]
-      if typeof value is 'undefined'
-        return null
+      _this.debug && console.log "Debug: get has no callback; running sync"
+      return (_this.getInternal key)[1]
+  
+  getInternal: (key)->
+    _this.debug && console.log "Debug: getting key " + key + " from heap"
+    value = _this.heap[key]
+    if typeof value is 'undefined'
+      _this.debug && console.log "Debug: not found"
+      return [{type:"notfound", message:"Key " + key + " not found in heap."}, null]
+    else
+      if not value.isGood
+        _this.debug && console.log "Debug: expired or invalid"
+        _this.destroy key
+        return [{type:"notvalid", message:"Key " + key + " expired or invalid."}, null]
       else
-        if not value.isGood
-          _this.destroy key
-          return null
-        else
-          return value.data
-      
+        _this.debug && console.log "Debug: found it!"
+        return [null, value.data]
   
   # Performs setback to get data if empty or invalid
   # Ultimately, callback gets called with end data
-  getOrSet: (key, options, callback, setback)->
+  getOrSet: (key, setback, options, callback)->
     _this = this
+    if typeof options is 'function'
+      callback = options
+      options = {}
+    if typeof callback is 'function'
+      _this.debug && console.log "Debug: getOrSet; getting async"
+      _this.get key, (err, data)->
+        if not err
+          _this.debug && console.log "Debug: getOrSet; key exists, calling back"
+          callback null, data
+          if _this.heap[key].isNearDeath()
+            _this.debug && console.log "Debug: getOrSet; key is near death; will set after get"
+            if options.async
+              process.nextTick ()->
+                setback key, (data)->
+                  _this.set key, data, options
+            else
+              process.nextTick ()->
+                _this.set key, setback key, options
+        else
+          _this.debug && console.log "Debug: getOrSet; key invalid, setting back"
+          if options.async
+            _this.debug && console.log "Debug: getOrSet; setback is async"
+            setback key, (data)->
+              _this.set key, data, options, callback
+          else
+            _this.debug && console.log "Debug: getOrSet; setback is sync"
+            _this.set key, setback(key), options, callback
+    else
+      _this.debug && console.log "Debug: getOrSet; getting sync"
+      value = _this.getInternal key
+      if not value[0]
+        if _this.heap[key].isNearDeath()
+          _this.debug && console.log "Debug: getOrSet; key is near death; will set after get"
+          if options.async
+            throw "Cannot call getOrSet async without a callback!"
+          process.nextTick ()->
+            _this.set key, setback key, options
+        return value[1]
+      else
+        _this.debug && console.log "Debug: getOrSet; no valid key; setting"
+        if options.async
+          throw "Cannot call getOrSet async without a callback!"
+        return _this.setInternal key, setback(), options
     _this.get key, (error, value)->
       if error
         if error.type is "notfound" or error.type is "invalid"
@@ -193,9 +245,14 @@ class ShortMemory
       else
         callback null, value
     
-  destroy: (key)->
-    _this.debug && console.log "Destroying key " + key
-    delete _this.heap[key]
+  destroy: (key, callback)->
+    if typeof callback is 'function'
+      process.nextTick ()->
+        _this.debug && console.log "Debug: destroying key sync " + key
+        callback delete _this.heap[key]
+    else
+      _this.debug && console.log "Debug: destroying key sync " + key
+      return delete _this.heap[key]
   
   prune: ->
     clearTimeout _this.timer
@@ -242,6 +299,13 @@ class ShortMemory
     for i, memorable of _this.heap
       size += memorable.size
     return size
+  
+  isHealthy: (key) ->
+    entry = _this.heap[key]
+    if entry
+      return (entry.isGood() and not entry.isNearDeath())
+    else
+      return false
 
 class Memorable
   key: ""
@@ -267,7 +331,7 @@ class Memorable
   isGood: ->
     return not _this.invalid and (_this.expires is 0 or Date.now() < _this.expires)
   isNearDeath: ->
-    return Date.now() > (_this.expires - (DeathTime * 1000))
+    return Date.now() > (_this.expires - (_this.deathTime * 1000))
   invalidate: ->
     _this.invalid = true
   calculateSize: ->
