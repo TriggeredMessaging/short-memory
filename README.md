@@ -225,7 +225,7 @@ cache.isHealthy("food");
 cache.isHealthy("animal");
 ```
 
-# Building
+## Building
 
 If you'd like to compile the coffeescript to javascript yourself, simply use
 cake:
@@ -243,7 +243,7 @@ $ cake build
 Compiling: src\short-memory.coffee
 ```
 
-# Credits
+## Credits
 
 This library was inspired by [memcached](http://memcached.org/) (in spirit, 
 but not in source).
@@ -254,7 +254,7 @@ Browser compatibility (for those who might need it) is made possible thanks to
 [Andy E](http://stackoverflow.com/users/94197/andy-e)'s 
 ["safer Object.keys compatibility"](http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation)
 
-# License
+## License
 
 &copy;2012 Aejay Goehring and available under the MIT license:
 
