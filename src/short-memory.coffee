@@ -1,111 +1,25 @@
-# This console.log wrapper is the work of Craig Patik, coffeefied.
-# (Will split into separate, concat file later)
+﻿# Short Memory, a simple node.js in-memory caching library.
+# ©2012 Aejay Goehring and available under the MIT license:
 
-# Credits:
+# Permission is hereby granted, free of charge, to any person obtaining a copy 
+# of this software and associated documentation files (the "Software"), to 
+# deal in the Software without restriction, including without limitation the 
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+# sell copies of the Software, and to permit persons to whom the Software is 
+# furnished to do so, subject to the following conditions:
 
-# Copyright (c) 2012 Craig Patik
+# The above copyright notice and this permission notice shall be included in 
+# all copies or substantial portions of the Software.
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+# THE SOFTWARE.
 
-# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-# Tell IE9 to use its built-in console
-if Function::bind and (typeof console is "object" or typeof console is "function") and typeof console.log is "object"
-  ["log", "info", "warn", "error", "assert", "dir", "clear", "profile", "profileEnd"].forEach ((method) ->
-    console[method] = @call(console[method], console)
-  ), Function::bind
-
-# log() -- The complete, cross-browser (we don't judge!) console.log wrapper for his or her logging pleasure
-window = window || global
-
-unless window.log
-  window
-  window.log = ->
-    log.history = log.history or [] # store logs to an array for reference
-    log.history.push arguments_
-    
-    # Modern browsers
-    if typeof console isnt "undefined" and typeof console.log is "function"
-      
-      # Single argument, which is a string
-      if (Array::slice.call(arguments_)).length is 1 and typeof Array::slice.call(arguments_)[0] is "string"
-        console.log (Array::slice.call(arguments_)).toString()
-      else
-        console.log Array::slice.call(arguments_)
-    
-    # IE8
-    else if not Function::bind and typeof console isnt "undefined" and typeof console.log is "object"
-      Function::call.call console.log, console, Array::slice.call(arguments_)
-    
-    # IE7 and lower, and other old browsers
-    else
-      args = arguments_
-      
-      # Inject Firebug lite
-      unless document.getElementById("firebug-lite")
-        
-        # Include the script
-        script = document.createElement("script")
-        script.type = "text/javascript"
-        script.id = "firebug-lite"
-        
-        # If you run the script locally, point to /path/to/firebug-lite/build/firebug-lite.js
-        script.src = "https://getfirebug.com/firebug-lite.js"
-        
-        # If you want to expand the console window by default, uncomment this line
-        #document.getElementsByTagName('HTML')[0].setAttribute('debug','true');
-        document.getElementsByTagName("HEAD")[0].appendChild script
-        setTimeout (->
-          window.log.apply window, args
-        ), 2000
-      else
-        
-        # FBL was included but it hasn't finished loading yet, so try again momentarily
-        setTimeout (->
-          window.log.apply window, args
-        ), 500
-        
-# The following cross-browser keys fix is thanks to [Andy E](http://stackoverflow.com/users/94197/andy-e)
-
-Object.keys = Object.keys or do->
-  hasOwnProperty = Object.prototype.hasOwnProperty
-  hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString")
-  DontEnums = [
-    'toString',
-    'toLocaleString'
-    'valueOf'
-    'hasOwnProperty'
-    'isPrototypeOf'
-    'propertyIsEnumerable'
-    'constructor'
-  ]
-  DontEnumsLength = DontEnums.length
-  return (o)->
-    if typeof o isnt "object" and typeof o isnt "function" or o is null
-      throw new TypeError "Object.keys called on a non-object"
-    result = []
-    for key, obj of o
-      if hasOwnProperty.call o, key
-        result.push key
-    if hasDontEnumBug
-      for DontEnum in DontEnums
-        if hasOwnProperty.call o, DontEnum
-          result.push DontEnum
-    return result
-
-this.process?= {}
-
-if not this.process.nextTick
-  this.process.nextTick = (task)->
-    setTimeout task, 0
+# https://github.com/aejay/short-memory
 
 class ShortMemory
   heap: {}
