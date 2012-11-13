@@ -5,10 +5,12 @@
   "keywords": ["cache", "memory"],
   "author": "Aejay Goehring <aejay.goehring@gmail.com>",
   "dependencies": {
-    "coffee-script": "",
-    "uglify-js2": ""
   },
   "devDependencies": {
+    "coffee-script": "",
+    "mocha": "",
+    "uglify-js2": "",
+    "should": ""
   },
   "main": "index",
   "engines": {

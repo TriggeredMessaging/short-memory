@@ -1,4 +1,4 @@
-﻿# Short Memory, a simple node.js in-memory caching library.
+# Short Memory, a simple node.js in-memory caching library.
 # ©2012 Aejay Goehring and available under the MIT license:
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -21,7 +21,7 @@
 
 # https://github.com/aejay/short-memory
 
-class ShortMemory
+class ShortMemory extends require('events').EventEmitter
   heap: {}
   maxSize: 0
   maxCount: 0
@@ -45,8 +45,11 @@ class ShortMemory
     _this.maxCount = options.maxCount
     _this.maxAge = options.maxAge
     _this.debug = options.debug
-    _this.pruneTime = options.pruneTime * 1000
+    _this.pruneTime = options.pruneTime
     _this.deathTime = options.deathTime
+    
+    if _this.deathTime > _this.maxAge
+      throw "deathTime of cache cannot be greater than maxAge"
     
     do (_this) ->
       ShortMemory.prototype.prune.call(_this)
@@ -165,13 +168,25 @@ class ShortMemory
   destroy: (key, callback)->
     if typeof callback is 'function'
       process.nextTick ()->
-        _this.debug && console.log "Debug: destroying key sync " + key
-        callback delete _this.heap[key]
+        if typeof _this.heap[key] is 'undefined'
+          _this.debug && console.log "Debug: destroy async - key does not exist: " + key
+          callback false
+        else
+          _this.debug && console.log "Debug: destroy async - destroying key: " + key
+          _this.heap[key].destroy()
+          callback delete _this.heap[key]
+        
     else
-      _this.debug && console.log "Debug: destroying key sync " + key
-      return delete _this.heap[key]
+      if typeof _this.heap[key] is 'undefined'
+        _this.debug && console.log "Debug: destroy sync - key does not exist: " + key
+        return false
+      else
+        _this.debug && console.log "Debug: destroy sync - destroying key: " + key
+        _this.heap[key].emit "destroy"
+        return delete _this.heap[key]
   
   prune: ->
+    _this.emit "pre-prune"
     clearTimeout _this.timer
     prunable = []
     pruned = 0
@@ -207,8 +222,9 @@ class ShortMemory
     _this.timer = setTimeout(
       () ->
         ShortMemory.prototype.prune.call(_this)
-      _this.pruneTime
+      _this.pruneTime * 1000
     )
+    _this.emit "prune"
     return pruned
   
   calculateSize: ->
@@ -224,7 +240,7 @@ class ShortMemory
     else
       return false
 
-class Memorable
+class Memorable extends require('events').EventEmitter
   key: ""
   data: {}
   invalid: false
@@ -246,11 +262,14 @@ class Memorable
     _this.deathTime = options.deathTime
     _this.size = _this.calculateSize()
   isGood: ->
-    return not _this.invalid and (_this.expires is 0 or Date.now() < _this.expires)
+    if _this.expires isnt 0 and Date.now() > _this.expires
+      _this.invalidate()
+    return not _this.invalid
   isNearDeath: ->
     return Date.now() > (_this.expires - (_this.deathTime * 1000))
   invalidate: ->
     _this.invalid = true
+    _this.emit "invalidate"
   calculateSize: ->
     clearFuncs = []
     stack = [_this.data]
@@ -282,9 +301,4 @@ class Memorable
       func.call()
     return bytes
 
-root = this
-isNode = false
-if typeof module isnt 'undefined' and module.exports
-  module.exports = ShortMemory
-root.ShortMemory = ShortMemory
-root.Memorable = Memorable
+module.exports = ShortMemory
