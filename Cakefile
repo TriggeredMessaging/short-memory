@@ -45,12 +45,11 @@ task 'build', 'build the short-memory library from source', build = (options) ->
       console.log "Copying: " + path.normalize("src/" + file)
     fs.writeFileSync(output, contents, "utf8");
   # Coverage build
-  console.log "Coverage: #{path.normalize './node-jscoverage/jscoverage'} #{path.normalize './lib'} #{path.normalize './lib-cov'}"
-  children.exec path.normalize(
-    './node-jscoverage/jscoverage' + " " + 
-    path.normalize './lib' + " " + 
-    path.normalize './lib-cov'
-  )
+  coverage = path.normalize process.cwd() + '/jscoverage'
+  input = path.normalize process.cwd() + '/lib'
+  output = path.normalize process.cwd() + '/lib-cov'  
+  console.log "Coverage: #{coverage} #{input} #{output}"
+  children.exec "#{coverage} #{input} #{output}"
   if options.minify
     files = []
     for file in (fs.readdirSync 'lib')
