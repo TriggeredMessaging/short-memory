@@ -8,9 +8,11 @@
   },
   "devDependencies": {
     "coffee-script": "",
+    "node-jscoverage": "git://github.com/visionmedia/node-jscoverage.git",
     "mocha": "",
     "uglify-js2": "",
-    "should": ""
+    "should": "",
+    "wrench": ""
   },
   "main": "index",
   "engines": {

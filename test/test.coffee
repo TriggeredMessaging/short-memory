@@ -1,5 +1,5 @@
 assert = require("should");
-ShortMemory = require("../lib/short-memory.js");
+ShortMemory = require("../lib-cov/short-memory.js");
 
 describe 'ShortMemory', ->
   defaultCache = null

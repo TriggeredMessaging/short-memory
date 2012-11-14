@@ -22,6 +22,8 @@ headermin = """
 
 option '-m', '--minify', 'define whether to also minify build or watch'
 
+option '-t', '--test', 'run test cases and test for coverage'
+
 task 'build', 'build the short-memory library from source', build = (options) ->
   #proc = children.exec (path.normalize "./node_modules/coffee-script/bin/coffee") + " -l -c -o lib/ src/", (err, stdout, stderr) ->
   #  console.info stdout
@@ -42,6 +44,13 @@ task 'build', 'build the short-memory library from source', build = (options) ->
     else
       console.log "Copying: " + path.normalize("src/" + file)
     fs.writeFileSync(output, contents, "utf8");
+  # Coverage build
+  console.log "Coverage: #{path.normalize './node-jscoverage/jscoverage'} #{path.normalize './lib'} #{path.normalize './lib-cov'}"
+  children.exec path.normalize(
+    './node-jscoverage/jscoverage' + " " + 
+    path.normalize './lib' + " " + 
+    path.normalize './lib-cov'
+  )
   if options.minify
     files = []
     for file in (fs.readdirSync 'lib')
