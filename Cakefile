@@ -62,16 +62,40 @@ task 'build', 'build the short-memory library from source', build = (options) ->
       if error then console.log "#{error.code} #{error.signal}"
       else
         fs.writeFileSync 'test/coverage.html', stdout, 'utf8'
-    resultsText = ""
-    children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} --no-colors -R  spec", (error, stdout, stderr) ->
-      if error then console.log "#{error.code} #{error.signal}"
-      else
-        resultsText = "#{resultsText}Test Results:\r\n```#{stdout}\r\n```"
-      children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} -R markdown", (error, stdout, stderr) ->
-        if error then console.log "#{error.code} #{error.signal}"
-        else
-          resultsText = "#{resultsText}\r\n\r\nTest Definitions:\r\n\r\n#{stdout}\r\n"
-          fs.writeFileSync 'test/README.md', resultsText
+    testResults = ""
+    testDefinitions = ""
+    writeResults = ()->
+      fs.writeFileSync(
+        'test/README.md'
+        "# Test Results\r\n```#{testResults}\r\n```\r\n\r\n# Test Definitions\r\n\r\n##{testDefinitions}"
+        'utf8'
+      )
+      
+    children.spawn(
+      "#{path.normalize './node_modules/mocha/bin/mocha'}"
+      ["--no-colors", "-R  spec"]
+    ).stderr.on 'data', (data)->
+      testResults = data
+      if testDefinitions is not ""
+        writeResults()
+      
+    children.spawn(
+      "#{path.normalize './node_modules/mocha/bin/mocha'}"
+      ["--no-colors", "-R  markdown"]
+    ).stderr.on 'data', (data)->
+      testDefinitions = data
+      if testResults is not ""
+        writeResults()
+    #children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} --no-colors -R  spec", (error, stdout, stderr) ->
+      #if error then console.log "#{error.code} #{error.signal}"
+      #else
+        #console.log stdout
+        #resultsText = "#{resultsText}# Test Results\r\n```#{stdout}\r\n```"
+      #children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} -R markdown", (error, stdout, stderr) ->
+        #if error then console.log "#{error.code} #{error.signal}"
+        #else
+          #resultsText = "#{resultsText}\r\n\r\n# Test Definitions\r\n\r\n##{stdout}\r\n"
+          #fs.writeFileSync 'test/README.md', resultsText
   if options.minify
     files = []
     for file in (fs.readdirSync 'lib')

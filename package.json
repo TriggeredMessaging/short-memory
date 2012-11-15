@@ -1,6 +1,6 @@
 {
   "name": "short-memory",
-  "version": "0.0.1",
+  "version": "0.1.2",
   "description": "Simple node.js in-memory caching library.",
   "keywords": ["cache", "memory"],
   "author": "Aejay Goehring <aejay.goehring@gmail.com>",
