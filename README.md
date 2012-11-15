@@ -258,12 +258,6 @@ Compiling: src\short-memory.coffee
 This library was inspired by [memcached](http://memcached.org/) (in spirit, 
 but not in source).
 
-Browser compatibility (for those who might need it) is made possible thanks to
-[Craig Patik](https://github.com/cpatik)'s 
-[console.log wrapper](https://github.com/cpatik/console.log-wrapper), and 
-[Andy E](http://stackoverflow.com/users/94197/andy-e)'s 
-["safer Object.keys compatibility"](http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation)
-
 ## License
 
 &copy;2012 Aejay Goehring and available under the MIT license:
