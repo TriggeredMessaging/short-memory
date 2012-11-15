@@ -18,8 +18,10 @@ var options = {};
 
 var cache = new ShortMemory(options);
 
-// Set and get can be called async or sync by providing or excluding a callback
-// function. Sync requests return the result directly to the calling expression;
+// Set and get can be called async or sync by providing or excluding 
+// a callback function. Sync requests return the result directly to 
+// the calling 
+expression;
 cache.set("First!", {important: "data"});
 
 // async requests have the result passed to the given function.
@@ -35,33 +37,38 @@ ShortMemory can be initialized with several options, which you can use to limit
 the size and alter the behavior of the cache:
 ```js
 var options = {
-  // How long, in seconds, it takes for an entry to expire and become prunable.
-  // Defaults to 0, which does not set expirations for entries. This can be
-  // over-ridden by the options passed when setting a cache entry.
+  // How long, in seconds, it takes for an entry to expire and become
+  // prunable. Defaults to 0, which does not set expirations for 
+  // entries. This can be over-ridden by the options passed when 
+  // setting a cache entry.
   maxAge: 60,
   
-  // How large the (estimated*) size of the cache can be before pruning old
-  // entries. Defaults to 0, which does not set a maximum size.
+  // How large the (estimated*) size of the cache can be before 
+  // pruning old entries. Defaults to 0, which does not set a 
+  // maximum size.
   maxSize: 5000,
-  // * Size estimations are best-guess. This method should be last resort,
-  // perhaps used as a fail-safe against enormous data retention.
+  // * Size estimations are best-guess. This method should be 
+  // last resort, perhaps used as a fail-safe against enormous 
+  // data retention.
   
-  // How many entries the cache can hold before pruning the oldest entries.
-  // Defaults to 0, which allows any number of entries.
+  // How many entries the cache can hold before pruning the 
+  // oldest entries. Defaults to 0, which allows any number of 
+  // entries.
   maxCount: 100,
   
-  // How often the system checks for and destroys obsolete entries, in
-  // seconds. Defaults to 5.
+  // How often the system checks for and destroys obsolete 
+  // entries, in seconds. Defaults to 5.
   pruneTime: 5,
   
   
-  // When an entry is this many seconds from expiring, the system should
-  // return the current value on request and kick off a process to update
-  // the value afterwards. This is used by the getOrSet function. This 
-  // can be over-ridden by the options passed when setting a cache entry.
+  // When an entry is this many seconds from expiring, the 
+  // system should return the current value on request and kick 
+  // off a process to update the value afterwards. This is used 
+  // by the getOrSet function. This can be over-ridden by the 
+  // options passed when setting a cache entry.
   deathTime: 0,
   
-  // Writes verbose output to the console for debugging purposes.
+  // Writes verbose output to the console for debugging.
   debug: false
   
 };
@@ -151,9 +158,9 @@ var myName = cache.getOrSet(
 var myFood;
 cache.getOrSet(
   "food",
-  // If "food" didn't exist, we would use our own LookupFunction to figure out
-  // the value, which would then be stored and the callback would set myFood to
-  // the new value.
+  // If "food" didn't exist, we would use our own LookupFunction to
+  // figure out the value, which would then be stored and the
+  // callback would set myFood to the new value.
   function(key) {
     return LookupFunction(key);
   },
@@ -167,23 +174,28 @@ cache.getOrSet(
 var myAnimal;
 cache.getOrSet(
   "animal",
-  // The "next" function is provided to us when we specify the async option.
+  // The "next" function is provided to us when we specify the async
+  // option.
   function(key, next) {
-    // If we have an async version of our LookupFunction, we can use it here...
+    // If we have an async version of our LookupFunction, we can use
+    // it here...
     LookupFunctionAsync(key, function(data) {
-      // ... and assign its response to the value by calling the given next() function
+      // ... and assign its response to the value by calling the 
+      // given next() function
       next(data);
-      // next sets the key to the given value, and then fires the callback parameter.
+      // next sets the key to the given value, and then fires the 
+      // callback parameter.
     });
   },
   {async:true},
-  // Ultimately, our callback gets called. Since "animal" does exist, myAnimal
-  // gets set to "Panda".
+  // Ultimately, our callback gets called. Since "animal" does exist,
+  // myAnimal gets set to "Panda".
   function(err, data) {
     myAnimal = data;
   }
 );
-// Seriously, though, kids. Leave the care of endangered species to the professionals!
+// Seriously, though, kids. Leave the care of endangered species 
+// to the professionals!
 ```
 
 ### .destroy(key [, callback])
@@ -231,10 +243,11 @@ cake:
 $ cake
 Cakefile defines the following tasks:
 
-cake build                # build the short-memory library from source
-cake watch                # watch the source files for changes, and build
+cake build    # build the short-memory library from source
+cake watch    # watch the source files for changes, and build
 
   -m, --minify       define whether to also minify build or watch
+  -t, --test         run and output tests/coverage to test directory
 
 $ cake build
 Compiling: src\short-memory.coffee
