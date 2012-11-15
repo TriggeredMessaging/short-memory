@@ -46,7 +46,7 @@ task 'build', 'build the short-memory library from source', build = (options) ->
       console.log "Copying: " + path.normalize("src/" + file)
     fs.writeFileSync(output, contents, "utf8");
   # Coverage build
-  wrench.rmdirSyncRecursive 'lib-cov'
+  wrench.rmdirSyncRecursive 'lib-cov', true
   if process.platform is 'win32' or process.platform is 'win64'
     coverage = path.normalize process.cwd() + '/jscoverage.exe'
   else
