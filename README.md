@@ -20,8 +20,7 @@ var cache = new ShortMemory(options);
 
 // Set and get can be called async or sync by providing or excluding 
 // a callback function. Sync requests return the result directly to 
-// the calling 
-expression;
+// the calling expression.
 cache.set("First!", {important: "data"});
 
 // async requests have the result passed to the given function.
