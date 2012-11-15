@@ -1,0 +1,340 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>Short-memory</title>
+  <meta name="description" content="Simple node.js in-memory caching library.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">Short-memory</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Simple node.js in-memory caching library.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/aejay/short-memory/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/aejay/short-memory/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/aejay/short-memory" class="code">View Short-memory on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>short-memory</h1>
+
+<p>Simple node.js in-memory caching library.</p>
+
+<p>Creates basic structures for storing arbitrary data for future use, able to be
+limited by entry count, entry age, or cache size.</p>
+
+<h2>Installation</h2>
+
+<p>This app is not yet available in npm's repository. To install it through npm, use 
+the following:</p>
+
+<pre><code>$ npm install git://github.com/aejay/short-memory.git
+</code></pre>
+
+<h2>Simple usage</h2>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">ShortMemory</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'short-memory'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{};</span>
+
+<span class="kd">var</span> <span class="nx">cache</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ShortMemory</span><span class="p">(</span><span class="nx">options</span><span class="p">);</span>
+
+<span class="c1">// Set and get can be called async or sync by providing or excluding a callback</span>
+<span class="c1">// function. Sync requests return the result directly to the calling expression;</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"First!"</span><span class="p">,</span> <span class="p">{</span><span class="nx">important</span><span class="o">:</span> <span class="s2">"data"</span><span class="p">});</span>
+
+<span class="c1">// async requests have the result passed to the given function.</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"First!"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Logs: {important: "data"}</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span> <span class="o">||</span> <span class="nx">result</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+<h2>Options</h2>
+
+<p>ShortMemory can be initialized with several options, which you can use to limit 
+the size and alter the behavior of the cache:</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1">// How long, in seconds, it takes for an entry to expire and become prunable.</span>
+  <span class="c1">// Defaults to 0, which does not set expirations for entries. This can be</span>
+  <span class="c1">// over-ridden by the options passed when setting a cache entry.</span>
+  <span class="nx">maxAge</span><span class="o">:</span> <span class="mi">60</span><span class="p">,</span>
+
+  <span class="c1">// How large the (estimated*) size of the cache can be before pruning old</span>
+  <span class="c1">// entries. Defaults to 0, which does not set a maximum size.</span>
+  <span class="nx">maxSize</span><span class="o">:</span> <span class="mi">5000</span><span class="p">,</span>
+  <span class="c1">// * Size estimations are best-guess. This method should be last resort,</span>
+  <span class="c1">// perhaps used as a fail-safe against enormous data retention.</span>
+
+  <span class="c1">// How many entries the cache can hold before pruning the oldest entries.</span>
+  <span class="c1">// Defaults to 0, which allows any number of entries.</span>
+  <span class="nx">maxCount</span><span class="o">:</span> <span class="mi">100</span><span class="p">,</span>
+
+  <span class="c1">// How often the system checks for and destroys obsolete entries, in</span>
+  <span class="c1">// seconds. Defaults to 5.</span>
+  <span class="nx">pruneTime</span><span class="o">:</span> <span class="mi">5</span><span class="p">,</span>
+
+
+  <span class="c1">// When an entry is this many seconds from expiring, the system should</span>
+  <span class="c1">// return the current value on request and kick off a process to update</span>
+  <span class="c1">// the value afterwards. This is used by the getOrSet function. This </span>
+  <span class="c1">// can be over-ridden by the options passed when setting a cache entry.</span>
+  <span class="nx">deathTime</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+
+  <span class="c1">// Writes verbose output to the console for debugging purposes.</span>
+  <span class="nx">debug</span><span class="o">:</span> <span class="kc">false</span>
+
+<span class="p">};</span>
+<span class="kd">var</span> <span class="nx">cache</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ShortMemory</span><span class="p">(</span><span class="nx">options</span><span class="p">);</span>
+</pre></div>
+
+<h2>Functions</h2>
+
+<div class="highlight"><pre><span class="c1">// Let's start with the following assumption:</span>
+<span class="kd">var</span> <span class="nx">ShortMemory</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"short-memory"</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">cache</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ShortMemory</span><span class="p">({</span><span class="nx">maxCount</span><span class="o">:</span> <span class="mi">10</span><span class="p">});</span>
+</pre></div>
+
+<h3>.set(key, value [, options] [, callback])</h3>
+
+<p>Sets the key to the given value. When successful, it responds with the
+value of the given entry's value. This function can be called asynchronously
+by providing a callback function, which receives data in the expected
+<code>(err, data)</code> format.</p>
+
+<p>When called synchronously, the value of the key is returned to the calling 
+expression when successful; when unsuccessful, it returns <code>null</code>.</p>
+
+<div class="highlight"><pre><span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"Andrew"</span><span class="p">);</span>
+
+<span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"food"</span><span class="p">,</span> <span class="s2">"Pizza"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+  <span class="k">else</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">cache</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">"animal"</span><span class="p">,</span> <span class="s2">"Panda"</span><span class="p">,</span> <span class="p">{</span><span class="nx">maxAge</span><span class="o">:</span> <span class="mi">120</span><span class="p">,</span> <span class="nx">deathTime</span><span class="o">:</span> <span class="mi">30</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// maxAge and deathTime can be over-ridden on an entry basis</span>
+<span class="p">});</span>
+</pre></div>
+
+<h3>.get(key [, callback])</h3>
+
+<p>Retrieves the value for the given key. This responds just as .set does.If
+async, it calls back with <code>(err, data)</code>. If sync, it either returns the value
+of the key, or <code>null</code>.</p>
+
+<div class="highlight"><pre><span class="c1">// "Andrew"</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">));</span>
+
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"food"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span>
+  <span class="c1">// "Pizza"</span>
+  <span class="k">else</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="c1">// "Panda"</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"animal"</span><span class="p">,</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">console</span><span class="p">));</span>
+</pre></div>
+
+<h3>.getOrSet(key, setback [, options] [, callback])</h3>
+
+<p>This is what you will most likely use, but I thought I'd explain those other
+two first.</p>
+
+<p>Retrieves the value of the given key. If the key has expired or does not exist,
+it calls setback, which it expects to return the new value. It then updates the
+value, and returns the new value.</p>
+
+<p>A callback can be specified to run asynchronously. Additionally, if the <code>async</code>
+option is set to <code>true</code>, the setback will be called with next function that 
+wraps the key update and given callback function. See the third example.</p>
+
+<p>Additionally, if the key has a <code>deathTime</code> of anything other than 0, cache entries
+get treated differently by this function. If an entry is requested that is within
+its <code>deathTime</code> (given seconds away from its expiration), the function will return
+or callback with the current value immediately, and then follow up with an update
+after-the-fact. (Instant gratification, deferred update, all goodness.)</p>
+
+<div class="highlight"><pre><span class="c1">// Since "name" exists and is valid, Andrew is returned</span>
+<span class="kd">var</span> <span class="nx">myName</span> <span class="o">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">getOrSet</span><span class="p">(</span>
+  <span class="s2">"name"</span><span class="p">,</span>
+  <span class="c1">// If it didn't, it would update and return "Aejay"</span>
+  <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s2">"Aejay"</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">myFood</span><span class="p">;</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">getOrSet</span><span class="p">(</span>
+  <span class="s2">"food"</span><span class="p">,</span>
+  <span class="c1">// If "food" didn't exist, we would use our own LookupFunction to figure out</span>
+  <span class="c1">// the value, which would then be stored and the callback would set myFood to</span>
+  <span class="c1">// the new value.</span>
+  <span class="kd">function</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">LookupFunction</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="c1">// Since "food" exists, though, myFood gets set to "Pizza"</span>
+  <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">myFood</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">);</span>
+
+<span class="c1">// Pandas are not practical pets.</span>
+<span class="kd">var</span> <span class="nx">myAnimal</span><span class="p">;</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">getOrSet</span><span class="p">(</span>
+  <span class="s2">"animal"</span><span class="p">,</span>
+  <span class="c1">// The "next" function is provided to us when we specify the async option.</span>
+  <span class="kd">function</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// If we have an async version of our LookupFunction, we can use it here...</span>
+    <span class="nx">LookupFunctionAsync</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// ... and assign its response to the value by calling the given next() function</span>
+      <span class="nx">next</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+      <span class="c1">// next sets the key to the given value, and then fires the callback parameter.</span>
+    <span class="p">});</span>
+  <span class="p">},</span>
+  <span class="p">{</span><span class="nx">async</span><span class="o">:</span><span class="kc">true</span><span class="p">},</span>
+  <span class="c1">// Ultimately, our callback gets called. Since "animal" does exist, myAnimal</span>
+  <span class="c1">// gets set to "Panda".</span>
+  <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">myAnimal</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">);</span>
+<span class="c1">// Seriously, though, kids. Leave the care of endangered species to the professionals!</span>
+</pre></div>
+
+<h3>.destroy(key [, callback])</h3>
+
+<p>Does what it sounds like. You can use this function to manually discard an
+entry in your cache. Will respond with <code>true</code> if it succeeded, or <code>false</code> if
+the key did not exist or could not (for whatever odd reason) be deleted.</p>
+
+<div class="highlight"><pre><span class="c1">// true</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">destroy</span><span class="p">(</span><span class="s2">"food"</span><span class="p">);</span>
+<span class="c1">// null</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"food"</span><span class="p">);</span>
+
+<span class="c1">// false (it doesn't exist)</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">destroy</span><span class="p">(</span><span class="s2">"Planet Pluto"</span><span class="p">);</span>
+<span class="c1">// still null</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"Planet Pluto"</span><span class="p">);</span>
+
+<span class="c1">// Sorry if that destroys your childhood like it did mine.</span>
+</pre></div>
+
+<h3>.isHealthy(key)</h3>
+
+<p>This function is only useful if a key has an expiration (<code>maxAge</code>) and a
+<code>deathTime</code>. It can be used to determine if a key is healthy (ie: it is not
+expired, and is not within <code>deathTime</code> seconds from expiring). If it is not
+healthy, the application may choose to manually update the entry, or take
+whatever other needed course of action.</p>
+
+<div class="highlight"><pre><span class="c1">// false (We destroyed it, remember? Destruction isn't healthy.)</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">isHealthy</span><span class="p">(</span><span class="s2">"food"</span><span class="p">);</span>
+
+<span class="c1">// true</span>
+<span class="nx">cache</span><span class="p">.</span><span class="nx">isHealthy</span><span class="p">(</span><span class="s2">"animal"</span><span class="p">);</span>
+</pre></div>
+
+<h2>Building</h2>
+
+<p>If you'd like to compile the coffeescript to javascript yourself, simply use
+cake:</p>
+
+<pre><code>$ cake
+Cakefile defines the following tasks:
+
+cake build                # build the short-memory library from source
+cake watch                # watch the source files for changes, and build
+
+  -m, --minify       define whether to also minify build or watch
+
+$ cake build
+Compiling: src\short-memory.coffee
+</code></pre>
+
+<h2>Credits</h2>
+
+<p>This library was inspired by <a href="http://memcached.org/">memcached</a> (in spirit, 
+but not in source).</p>
+
+<p>Browser compatibility (for those who might need it) is made possible thanks to
+<a href="https://github.com/cpatik">Craig Patik</a>'s 
+<a href="https://github.com/cpatik/console.log-wrapper">console.log wrapper</a>, and 
+<a href="http://stackoverflow.com/users/94197/andy-e">Andy E</a>'s 
+<a href="http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation">"safer Object.keys compatibility"</a></p>
+
+<h2>License</h2>
+
+<p>©2012 Aejay Goehring and available under the MIT license:</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of 
+this software and associated documentation files (the "Software"), to deal in 
+the Software without restriction, including without limitation the rights to 
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the Software is furnished to do 
+so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/aejay" class="avatar"><img src="https://secure.gravatar.com/avatar/0aa42fae8517d6739602b40a33d2d80b?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/aejay">aejay</a> maintains <a href="https://github.com/aejay/short-memory">Short-memory</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/aejay/short-memory/tarball/master" class="tar">tar</a><a href="https://github.com/aejay/short-memory/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-36363114-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+</body>
+</html>
