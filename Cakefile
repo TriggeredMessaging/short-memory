@@ -5,6 +5,7 @@ CoffeeScript  = require 'coffee-script'
 {spawn, exec} = require 'child_process'
 children      = require 'child_process'
 wrench        = require 'wrench'
+mocha         = require 'mocha'
 
 # Built file header.
 header = """
@@ -45,16 +46,26 @@ task 'build', 'build the short-memory library from source', build = (options) ->
     else
       console.log "Copying: " + path.normalize("src/" + file)
     fs.writeFileSync(output, contents, "utf8");
-  # Coverage build
-  wrench.rmdirSyncRecursive 'lib-cov', true
-  if process.platform is 'win32' or process.platform is 'win64'
-    coverage = path.normalize process.cwd() + '/jscoverage.exe'
-  else
-    coverage = path.normalize process.cwd() + '/jscoverage'
-  input = path.normalize process.cwd() + '/lib'
-  output = path.normalize process.cwd() + '/lib-cov'  
-  console.log "Coverage: #{coverage} #{input} #{output}"
-  children.exec "#{coverage} #{input} #{output}"
+  if options.test
+    # Coverage build
+    wrench.rmdirSyncRecursive 'lib-cov', true
+    if process.platform is 'win32' or process.platform is 'win64'
+      coverage = path.normalize process.cwd() + '/jscoverage.exe'
+    else
+      coverage = path.normalize process.cwd() + '/jscoverage'
+    input = path.normalize process.cwd() + '/lib'
+    output = path.normalize process.cwd() + '/lib-cov'  
+    #console.log "Coverage: #{coverage} #{input} #{output}"
+    children.exec "#{coverage} #{input} #{output}"
+    # Test
+    children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} -R html-cov", (error, stdout, stderr) ->
+      if error then console.log "#{error.code} #{error.signal}"
+      else
+        fs.writeFileSync 'test/coverage.html', stdout, 'utf8'
+    children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} -R markdown", (error, stdout, stderr) ->
+      if error then console.log "#{error.code} #{error.signal}"
+      else
+        fs.writeFileSync 'test/README.md', stdout, 'utf8'
   if options.minify
     files = []
     for file in (fs.readdirSync 'lib')
