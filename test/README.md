@@ -1,3 +1,38 @@
+Test Results:
+```
+
+  ShortMemory
+    .maxAge
+      ◦ should be a number: [2K[0G      ✔ should be a number 
+      ◦ should default to 0: [2K[0G      ✔ should default to 0 
+    .maxSize
+      ◦ should be a number: [2K[0G      ✔ should be a number 
+      ◦ should default to 0: [2K[0G      ✔ should default to 0 
+    .maxCount
+      ◦ should be a number: [2K[0G      ✔ should be a number 
+      ◦ should default to 0: [2K[0G      ✔ should default to 0 
+    .pruneTime
+      ◦ should be a number: [2K[0G      ✔ should be a number 
+      ◦ should default to 5: [2K[0G      ✔ should default to 5 
+    .deathTime
+      ◦ should be a number: [2K[0G      ✔ should be a number 
+      ◦ should default to 0: [2K[0G      ✔ should default to 0 
+      ◦ should never be more than pruneTime: [2K[0G      ✔ should never be more than pruneTime 
+    .debug
+      ◦ should be a boolean: [2K[0G      ✔ should be a boolean 
+      ◦ should default to false: [2K[0G      ✔ should default to false 
+    .set(key, value)
+      ◦ should assume the cache options by default: [2K[0G      ✔ should assume the cache options by default 
+      ◦ should return the stored value on success: [2K[0G      ✔ should return the stored value on success 
+
+
+  ✔ 15 tests complete (96 ms)
+
+
+```
+
+Test Definitions:
+
 # TOC
    - [ShortMemory](#shortmemory)
      - [.maxAge](#shortmemory-maxage)
@@ -127,4 +162,5 @@ should return the stored value on success.
 ```js
 }
 ```
+
 

@@ -62,10 +62,16 @@ task 'build', 'build the short-memory library from source', build = (options) ->
       if error then console.log "#{error.code} #{error.signal}"
       else
         fs.writeFileSync 'test/coverage.html', stdout, 'utf8'
-    children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} -R markdown", (error, stdout, stderr) ->
+    resultsText = ""
+    children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} --no-colors -R  spec", (error, stdout, stderr) ->
       if error then console.log "#{error.code} #{error.signal}"
       else
-        fs.writeFileSync 'test/README.md', stdout, 'utf8'
+        resultsText = "#{resultsText}Test Results:\r\n```#{stdout}\r\n```"
+      children.exec "#{path.normalize './node_modules/mocha/bin/mocha'} -R markdown", (error, stdout, stderr) ->
+        if error then console.log "#{error.code} #{error.signal}"
+        else
+          resultsText = "#{resultsText}\r\n\r\nTest Definitions:\r\n\r\n#{stdout}\r\n"
+          fs.writeFileSync 'test/README.md', resultsText
   if options.minify
     files = []
     for file in (fs.readdirSync 'lib')
