@@ -1,9 +1,10 @@
 fs            = require 'fs'
 path          = require 'path'
-#{extend}      = require './lib/coffee-script/helpers'
+#{extend}     = require './lib/coffee-script/helpers'
 CoffeeScript  = require 'coffee-script'
 {spawn, exec} = require 'child_process'
-children = require 'child_process'
+children      = require 'child_process'
+wrench        = require 'wrench'
 
 # Built file header.
 header = """
@@ -45,7 +46,11 @@ task 'build', 'build the short-memory library from source', build = (options) ->
       console.log "Copying: " + path.normalize("src/" + file)
     fs.writeFileSync(output, contents, "utf8");
   # Coverage build
-  coverage = path.normalize process.cwd() + '/jscoverage'
+  wrench.rmdirSyncRecursive 'lib-cov'
+  if process.platform is 'win32' or process.platform is 'win64'
+    coverage = path.normalize process.cwd() + '/jscoverage.exe'
+  else
+    coverage = path.normalize process.cwd() + '/jscoverage'
   input = path.normalize process.cwd() + '/lib'
   output = path.normalize process.cwd() + '/lib-cov'  
   console.log "Coverage: #{coverage} #{input} #{output}"
