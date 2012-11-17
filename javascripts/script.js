@@ -16,7 +16,7 @@ $(function(){
   // putting lines by the pre blocks
   $("pre").each(function(){
     var pre = $(this).text().split("\n");
-    if (pre.length = 1) pre = $(this).text().split("\r");
+    if (pre.length == 1) pre = $(this).text().split("\r");
     var lines = new Array(pre.length+1);
     for(var i = 0; i < pre.length; i++) {
       var wrap = Math.floor(pre[i].split("").length / 70)
